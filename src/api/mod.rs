@@ -9,6 +9,9 @@ pub fn server(url: &str, repo: Arc<dyn Repository>) {
             (GET) (/pokemon/{name: String}) => {
                 get_pokemon::serve(&name, repo.clone())
             },
+            (GET) (/pokemon/translate/{name: String}) => {
+                translate_pokemon::serve(&name, repo.clone())
+            },
             _ => rouille::Response::from(Status::NotFound)
         )
     });
