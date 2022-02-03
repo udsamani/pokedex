@@ -1,3 +1,9 @@
+mod api;
+mod domain;
+
+#[macro_use]
+extern crate rouille;
+
 fn main() {
-    println!("Hello, world!");
+    api::server("localhost:8000")
 }
