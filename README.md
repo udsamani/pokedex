@@ -48,3 +48,13 @@ pub trait Repository: Send + Sync{
 ```
 This helps us in abstacting out or dependencies. Let's say tomorrow instead of using `https://pokeapi.co/` we start talking to a database to obtain pokemon details. We can then do this by just implementing this trait for some `DatabaseRepository` struct. Thus allowing our application to work in two different ways. Moreover, this even makes reverting easier. 
 
+# Tests
+
+One can easily run tests by running from source directory `cargo test`
+
+# Production Improvements
+When it comes to imporvements, especially for production environment, following things come to my mind:
+- **Use Versioninig** - Versioninig of APIs makes it easier for future changes and helps in making things backward compatible. For example, if we sell this applicaiton as a service to client and they start using our API endpoints. Now every time if we make any change at API layer for improvements we need make sure that our client's timeline match to ours or else the new changes deployed would break the existing clients if they haven't made appropriate changes. We can avoid this by using something like `pokemon/v1/{name}` and `pokemon/v2/{name}`. This way we are not blocked on making new changes.
+- **Use API Key*** - API key to register different clients and limit according to our business model.
+- **Caching** - We surely can improve the performance of our server by adding caching. Moreover if we add distributed cache, we maintain the statelessness of our server thereby enabling horizontal scaling via frameworks like Kubernetes
+- **Observability** - - Currently the application is very minimalist and does not involve any core observability. We lack proper logging , monitoring, and tracing. The three main pillars of the cloud world. If we were to provide this as a SAAS product we surely need to make improvements at those avenues.
