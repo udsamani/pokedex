@@ -1,23 +1,38 @@
-#1) Use default dart image as the build image
-FROM rust AS builder 
+FROM rust:latest as builder
 
-#2) Copy the current folder into the build folder
-COPY . /app
+RUN USER=root cargo new --bin rust-docker-web
+WORKDIR ./rust-docker-web
+COPY ./Cargo.toml ./Cargo.toml
+RUN cargo build --release
+RUN rm src/*.rs
 
-#3) Set the work directory
-WORKDIR /app
+ADD . ./
 
-#4) Build the application
+RUN rm ./target/release/deps/rust_docker_web*
 RUN cargo build --release
 
-#5) Use slim alpine image
-FROM alpine:3.14
 
-#6) Copy the runtime files
-COPY --from=builder /app/target/release/pokedex /app/pokedex
-WORKDIR /app
+FROM debian:buster-slim
+ARG APP=/usr/src/app
 
+RUN apt-get update \
+    && apt-get install -y ca-certificates tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
+EXPOSE 8080
 
-#7) Start the server
-CMD ["./pokedex"]
+ENV TZ=Etc/UTC \
+    APP_USER=appuser
+
+RUN groupadd $APP_USER \
+    && useradd -g $APP_USER $APP_USER \
+    && mkdir -p ${APP}
+
+COPY --from=builder /rust-docker-web/target/release/rust-docker-web ${APP}/rust-docker-web
+
+RUN chown -R $APP_USER:$APP_USER ${APP}
+
+USER $APP_USER
+WORKDIR ${APP}
+
+CMD ["./rust-docker-web"]
