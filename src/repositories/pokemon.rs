@@ -4,6 +4,8 @@ use rustemon::blocking::pokemon::pokemon_species;
 use serde::Deserialize;
 use ureq;
 
+const CAVE: &str = "cave";
+
 // ================================= Common Repository Trait ====================================//
 pub trait Repository: Send + Sync{
     fn get_pokemon(&self, name: PokemonName) -> Pokemon;
@@ -55,7 +57,12 @@ impl Repository for RustemonRepository {
         let mut pokemon = self.get_pokemon_details(String::from(name));
 
         // 2) Call Yoda or Shakespeare translator endpoint accorrdingly.
-        let url = format!("{}?text={}", self.yoda, pokemon.description);
+        let mut translator_url = &self.shakespeare;
+        if pokemon.habitat == CAVE || pokemon.is_legendary {
+            translator_url = &self.yoda;
+        }
+
+        let url = format!("{}?text={}", *translator_url, pokemon.description);
         let res = match ureq::get(&url)
             .set("X-FunTranslations-Api-Secret", "ipSacTXQqq9wWGtaTOxREweF")
             .call() 
