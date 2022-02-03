@@ -20,6 +20,8 @@ pub fn server(url: &str, repo: Arc<dyn Repository>) {
 enum Status {
     Ok, 
     BadRequest,
+    Unauthorized,
+    TooManyRequests,
     NotFound,
     InternalServerError,
 }
@@ -30,6 +32,8 @@ impl From<Status> for rouille::Response {
             Status::Ok => 200,
             Status::BadRequest => 400,
             Status::NotFound => 404,
+            Status::Unauthorized => 401,
+            Status::TooManyRequests => 429,
             Status::InternalServerError => 500,
         };
 

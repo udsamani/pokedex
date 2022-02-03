@@ -1,5 +1,6 @@
 use crate::api::Status;
 use crate::domain::get_pokemon;
+use crate::errors::Error;
 use crate::repositories::pokemon::Repository;
 use std::sync::Arc;
 use rouille;
@@ -28,8 +29,10 @@ pub fn serve(name: &String, repo: Arc<dyn Repository>) -> rouille::Response {
             habitat,
             is_legendary
         }),
-        Err(get_pokemon::Error::BadRequest) => rouille::Response::from(Status::BadRequest),
-        Err(get_pokemon::Error::NotFound) => rouille::Response::from(Status::NotFound),
-        Err(get_pokemon::Error::Unknown) => rouille::Response::from(Status::InternalServerError),
+        Err(Error::BadRequest) => rouille::Response::from(Status::BadRequest),
+        Err(Error::NotFound) => rouille::Response::from(Status::NotFound),
+        Err(Error::Unauthorized) => rouille::Response::from(Status::Unauthorized),
+        Err(Error::TooManyRequests) => rouille::Response::from(Status::TooManyRequests),
+        _ => rouille::Response::from(Status::InternalServerError),
     }
 }

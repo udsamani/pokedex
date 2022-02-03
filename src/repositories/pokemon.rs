@@ -1,6 +1,7 @@
 use crate::domain::entities::{Pokemon, PokemonName};
 use rustemon::model::pokemon::PokemonSpecies;
 use rustemon::blocking::pokemon::pokemon_species;
+use crate::errors::{Error, handle_error_code};
 use serde::Deserialize;
 use ureq;
 
@@ -8,8 +9,8 @@ const CAVE: &str = "cave";
 
 // ================================= Common Repository Trait ====================================//
 pub trait Repository: Send + Sync{
-    fn get_pokemon(&self, name: PokemonName) -> Pokemon;
-    fn translate_pokemon(&self, name: PokemonName) -> Result<Pokemon, ()>;
+    fn get_pokemon(&self, name: PokemonName) -> Result<Pokemon, Error>;
+    fn translate_pokemon(&self, name: PokemonName) -> Result<Pokemon, Error>;
 }
 
 
@@ -29,32 +30,30 @@ impl RustemonRepository {
         }
     }
 
-    //TODO : Make sure we send Result<Pokemon, Error> with appropriate error.
-    pub fn get_pokemon_details(&self, name: String) -> Pokemon {
+    pub fn get_pokemon_details(&self, name: String) -> Result<Pokemon, Error> {
         // Implemented a hack here. The rustemon library expects &'static str. The only way to do this here
         // is by leaking memory. Ideally need to raise a PR for rustemon library asking to fix that. 
         let pokemon = pokemon_species::get_by_name(string_to_static_str(name));
         match pokemon {
             Ok(poke) => pokemon_species_to_pokemon(poke),
-            _ => Pokemon {
-                name: String::from("Udit"),
-                description: String::from("Figuring out"),
-                habitat: String::from("Human"),
-                is_legendary: true,
-            } 
+            Err(e) => {
+                // Due to a bug in Rustemon, not proper codes are being propogated
+                // As a result we may always get 500 error even for NotFound ones.
+                return Err(handle_error_code(e.status().unwrap().as_u16()))
+            }
         }
     }
 }
 
 
 impl Repository for RustemonRepository {
-    fn get_pokemon(&self, name: PokemonName) -> Pokemon {
+    fn get_pokemon(&self, name: PokemonName) -> Result<Pokemon, Error> {
         self.get_pokemon_details(String::from(name))
     }
 
-    fn translate_pokemon(&self, name: PokemonName) -> Result<Pokemon, ()> {
+    fn translate_pokemon(&self, name: PokemonName) -> Result<Pokemon, Error> {
         // 1) Fetch the pokemon first.
-        let mut pokemon = self.get_pokemon_details(String::from(name));
+        let mut pokemon = self.get_pokemon_details(String::from(name)).unwrap();
 
         // 2) Call Yoda or Shakespeare translator endpoint accorrdingly.
         let mut translator_url = &self.shakespeare;
@@ -70,9 +69,10 @@ impl Repository for RustemonRepository {
             Ok(res) => {
                 res
             },
-            Err(e) =>  {
-                return Err(())
+            Err(ureq::Error::Status(u, _)) =>  {
+                return Err(handle_error_code(u));
             },
+            _ => return Err(Error::InternalServerError)
         };
         let json = match res.into_json::<TranslationJson>() {
             Ok(json) => Ok(json),
@@ -109,7 +109,7 @@ fn string_to_static_str(s: String) -> &'static str {
     Box::leak(s.into_boxed_str())
 }
 
-fn pokemon_species_to_pokemon(pokemon: PokemonSpecies) -> Pokemon {
+fn pokemon_species_to_pokemon(pokemon: PokemonSpecies) -> Result<Pokemon, Error> {
 
     // Rustemon library has a nested option structure. It is very error prone in such cases. Thus
     // we will try and extract each values individually. We follow the following rules while 
@@ -135,11 +135,11 @@ fn pokemon_species_to_pokemon(pokemon: PokemonSpecies) -> Pokemon {
     }
     description = description.replace('\n', " ");
 
-    Pokemon {
+    Ok(Pokemon {
         name,
         description,
         habitat,
         is_legendary,
-    }
+    })
 }
 

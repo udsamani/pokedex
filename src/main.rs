@@ -1,6 +1,7 @@
 mod api;
 mod domain;
 mod repositories;
+mod errors;
 use std::sync::Arc;
 
 #[macro_use]
