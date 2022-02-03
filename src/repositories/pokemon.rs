@@ -68,7 +68,6 @@ impl Repository for RustemonRepository {
 
         let url = format!("{}?text={}", *translator_url, pokemon.description);
         let res = match ureq::get(&url)
-            .set("X-FunTranslations-Api-Secret", "ipSacTXQqq9wWGtaTOxREweF")
             .call() 
         {
             Ok(res) => {
