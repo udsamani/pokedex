@@ -5,6 +5,7 @@ use crate::errors::{Error, handle_error_code};
 use serde::Deserialize;
 use ureq;
 
+
 const CAVE: &str = "cave";
 
 // ================================= Common Repository Trait ====================================//
@@ -15,12 +16,10 @@ pub trait Repository: Send + Sync{
 
 
 // ================================== RustemonRepository  ======================================//
-
 pub struct RustemonRepository {
     yoda: String,
     shakespeare: String,
 }
-
 
 impl RustemonRepository {
     pub fn new() -> Self {
@@ -53,7 +52,11 @@ impl Repository for RustemonRepository {
 
     fn translate_pokemon(&self, name: PokemonName) -> Result<Pokemon, Error> {
         // 1) Fetch the pokemon first.
-        let mut pokemon = self.get_pokemon_details(String::from(name)).unwrap();
+        let mut pokemon = match self.get_pokemon_details(String::from(name)) {
+            Ok(pokemon) => pokemon,
+            _ => return Err(Error::InternalServerError)
+        };
+
 
         // 2) Call Yoda or Shakespeare translator endpoint accorrdingly.
         let mut translator_url = &self.shakespeare;

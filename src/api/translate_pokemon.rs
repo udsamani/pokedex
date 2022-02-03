@@ -31,7 +31,7 @@ pub fn serve(name: &String, repo: Arc<dyn Repository>) -> rouille::Response {
         }),
         Err(Error::BadRequest) => rouille::Response::from(Status::BadRequest),
         Err(Error::NotFound) => rouille::Response::from(Status::NotFound),
-        Err(Error::Unauthorized) => rouille::Response::from(Status::Unauthorized),
+        Err(Error::Unauthorized) => rouille::Response::basic_http_auth_login_required("https://pokeapi.co"),
         Err(Error::TooManyRequests) => rouille::Response::from(Status::TooManyRequests),
         _ => rouille::Response::from(Status::InternalServerError),
     }
