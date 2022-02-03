@@ -14,7 +14,7 @@ The Docker image used as base image is the `debian:buster-slim`.  From the root 
 ### Running Locally
 If you prefer running the application directly without using Docker, do the following from the project root directory:
 
-`cargo run`
+`RUST_LOG=INFO cargo run`
 
 You server will be started on port 8080.
 
@@ -58,3 +58,7 @@ When it comes to imporvements, especially for production environment, following 
 - **Use API Key** - API key to register different clients and limit according to our business model.
 - **Caching** - We surely can improve the performance of our server by adding caching. Moreover if we add distributed cache, we maintain the statelessness of our server thereby enabling horizontal scaling via frameworks like Kubernetes
 - **Observability** - - Currently the application is very minimalist and does not involve any core observability. We lack proper logging , monitoring, and tracing. The three main pillars of the cloud world. If we were to provide this as a SAAS product we surely need to make improvements at those avenues.
+
+
+# Caveats to lookout
+- Translator API has limit of 5 per hour(since using free)
