@@ -2,7 +2,7 @@ use crate::domain::entities::{Pokemon, PokemonName};
 use rustemon::model::pokemon::PokemonSpecies;
 use rustemon::blocking::pokemon::pokemon_species;
 use crate::errors::{Error, handle_error_code};
-use log::{error, info};
+use log::{error, info, warn};
 use serde::Deserialize;
 use ureq;
 
@@ -74,12 +74,12 @@ impl Repository for RustemonRepository {
             Ok(res) => {
                 res
             },
-            Err(ureq::Error::Status(u, _)) =>  {
-                error!("Error while translating pokemon description."); 
-                return Err(handle_error_code(u));
+            _ =>  {
+                warn!("Error while translating pokemon description. Reverting to old"); 
+                return Ok(pokemon)
             },
-            _ => return Err(Error::InternalServerError)
         };
+
         let json = match res.into_json::<TranslationJson>() {
             Ok(json) => Ok(json),
             _ => {
