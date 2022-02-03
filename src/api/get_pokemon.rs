@@ -3,6 +3,7 @@ use crate::domain::get_pokemon;
 use crate::errors::Error;
 use crate::repositories::pokemon::Repository;
 use std::sync::Arc;
+use log::info;
 use rouille;
 use serde::Serialize;
 
@@ -16,6 +17,7 @@ struct Response {
 
 
 pub fn serve(name: &String, repo: Arc<dyn Repository>) -> rouille::Response {
+    info!("Pokemon Fetching = {}", name);
     let request = get_pokemon::Request { name };
     match get_pokemon::execute(request, repo) {
         Ok(get_pokemon::Response {

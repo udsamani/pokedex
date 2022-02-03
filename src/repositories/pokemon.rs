@@ -2,6 +2,7 @@ use crate::domain::entities::{Pokemon, PokemonName};
 use rustemon::model::pokemon::PokemonSpecies;
 use rustemon::blocking::pokemon::pokemon_species;
 use crate::errors::{Error, handle_error_code};
+use log::{error, info};
 use serde::Deserialize;
 use ureq;
 
@@ -38,6 +39,7 @@ impl RustemonRepository {
             Err(e) => {
                 // Due to a bug in Rustemon, not proper codes are being propogated
                 // As a result we are sending in 500 error.
+                error!("Error while fetching pokemon details via Rustemon.");
                 return Err(Error::InternalServerError)
             }
         }
@@ -73,13 +75,17 @@ impl Repository for RustemonRepository {
                 res
             },
             Err(ureq::Error::Status(u, _)) =>  {
+                error!("Error while translating pokemon description."); 
                 return Err(handle_error_code(u));
             },
             _ => return Err(Error::InternalServerError)
         };
         let json = match res.into_json::<TranslationJson>() {
             Ok(json) => Ok(json),
-            _ => Err(()) ,
+            _ => {
+                error!("Error while json deserialization."); 
+                Err(()) 
+            },
         };
 
         //3) Update existing pokemon with translated description
