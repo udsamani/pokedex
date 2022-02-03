@@ -38,8 +38,8 @@ impl RustemonRepository {
             Ok(poke) => pokemon_species_to_pokemon(poke),
             Err(e) => {
                 // Due to a bug in Rustemon, not proper codes are being propogated
-                // As a result we may always get 500 error even for NotFound ones.
-                return Err(handle_error_code(e.status().unwrap().as_u16()))
+                // As a result we are sending in 500 error.
+                return Err(Error::InternalServerError)
             }
         }
     }

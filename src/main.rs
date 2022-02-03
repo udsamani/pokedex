@@ -9,5 +9,6 @@ extern crate rouille;
 
 fn main() {
     let repo = Arc::new(repositories::pokemon::RustemonRepository::new());
-    api::server("localhost:8000", repo)
+    println!("Starting server on 8080 port");
+    api::server("localhost:8080", repo)
 }
