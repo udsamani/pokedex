@@ -20,3 +20,23 @@ impl From<PokemonName> for String {
         n.0
     }
 }
+
+#[derive(Clone)]
+pub struct Pokemon {
+    pub name: String,
+    pub description: String, 
+    pub habitat: String,
+    pub is_legendary: bool,
+}
+
+
+impl Pokemon {
+    pub fn new(name: String, description: String, habitat: String, is_legendary: bool) -> Self {
+        Self {
+            name,
+            description, 
+            habitat,
+            is_legendary,
+        }
+    }
+}

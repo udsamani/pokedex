@@ -1,5 +1,7 @@
 use crate::api::Status;
 use crate::domain::get_pokemon;
+use crate::repositories::pokemon::Repository;
+use std::sync::Arc;
 use rouille;
 use serde::Serialize;
 
@@ -12,9 +14,9 @@ struct Response {
 }
 
 
-pub fn serve(name: &String) -> rouille::Response {
+pub fn serve(name: &String, repo: Arc<dyn Repository>) -> rouille::Response {
     let request = get_pokemon::Request { name };
-    match get_pokemon::execute(request) {
+    match get_pokemon::execute(request, repo) {
         Ok(get_pokemon::Response {
             name, 
             description,

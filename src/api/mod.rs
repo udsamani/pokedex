@@ -1,12 +1,13 @@
 mod get_pokemon;
 mod translate_pokemon;
+use crate::repositories::pokemon::Repository;
+use std::sync::Arc;
 
-
-pub fn server(url: &str) {
+pub fn server(url: &str, repo: Arc<dyn Repository>) {
     rouille::start_server(url, move |req| {
         router!(req, 
             (GET) (/pokemon/{name: String}) => {
-                get_pokemon::serve(&name)
+                get_pokemon::serve(&name, repo.clone())
             },
             _ => rouille::Response::from(Status::NotFound)
         )
