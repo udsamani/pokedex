@@ -61,4 +61,4 @@ When it comes to imporvements, especially for production environment, following 
 
 
 # Caveats to lookout
-- Translator API has limit of 5 per hour(since using free)
+- Translator API has limit of 5 per hour(since using free) [For funtranslations]
